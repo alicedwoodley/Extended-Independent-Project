@@ -1,6 +1,8 @@
-### Finding case study
+library(dplyr)
 
-# reduce stock table to variables i care about
+##### Finding case study #####
+
+# reduce stock table to variables I care about
 cs <- as.data.frame(cbind(stock$stockid, stock$scientificname, stock$commonname, stock$areaid, stock$region))
 colnames(cs) <- c('stockid', 'scientificname', 'commonname', 'areaid', 'region')
 
@@ -18,25 +20,28 @@ cs$areaname <- areas$areaname[match(cs$areaid, areas$areaid)]
 cs <- cs[,c('region','areaname', 'commonname', 'scientificname', 'stockid')]
 
 # how many different areas are there
-library(dplyr)
 n_distinct(cs$areaname) # 132 different areas
 
-# gulf of alaska - 19 species
-GoA <- cs[cs$areaname == 'Gulf of Alaska',]
+##### Gulf of Alaska #####
 
-# check what ssb data is available
-GoAssb <- select(ssb.data, ends_with("GA"))
+GoA <- cs[cs$areaname == 'Gulf of Alaska',] # contains 19 species
 
-# remove ones from ssb data that aren't in GoA
-GoAremove1 <- c("HERRRIGA", "PSALMPYBUSGA", "SABLEFEBSAIGA")
-GoAssb <- select(GoAssb, -GoAremove1)
+GoA.ssb <- select(ssb.data, ends_with("GA")) # find ssb data
+remove1 <- c("HERRRIGA", "PSALMPYBUSGA", "SABLEFEBSAIGA") # species that aren't in GoA
+GoA.ssb <- select(GoA.ssb, -remove1)
 
-# remove ones from GoA that have no ssb data
-GoAremove2 <- c("ATKAGA", "BIGSKAGA", "GPOCTOGA", "LNOSESKAGA", "SRAKEROCKGA", "SSTHORNHGA", "YEYEROCKGA")
-GoA <- GoA[!(GoA$stockid %in% GoAremove2),]
+# remove species that don't interact with other species
+remove2 <- c("DSOLEGA", "DUSROCKGA", "NROCKGA", "NRSOLEGA", "REXSOLEGA", "REYEROCKGA")
+GoA <- GoA[!(GoA$stockid %in% remove2),]
+GoA.ssb <- select(GoA.ssb, -remove2)
 
-# remove ones that don't interact with other species
-GoAremove3 <- c("DSOLEGA", "DUSROCKGA", "NROCKGA", "NRSOLEGA", "REXSOLEGA", "REYEROCKGA")
-GoA <- GoA[!(GoA$stockid %in% GoAremove3),]
-GoAssb <- select(GoAssb, -GoAremove3)
+# remove species from original list that don't have stock data
+remove3 <- c("ATKAGA", "BIGSKAGA", "GPOCTOGA", "LNOSESKAGA", "SRAKEROCKGA", "SSTHORNHGA", "YEYEROCKGA")
+GoA <- GoA[!(GoA$stockid %in% remove3),]
+
+GoA.r <- select(r.data, ends_with("GA")) # find recruitment data
+
+GoA.r <- select(GoA.r, -any_of(remove1)) # remove species that aren't in GoA
+GoA.r <- select(GoA.r, -any_of(remove2)) # remove species that don't interact 
+GoA.r <- select(GoA.r, -any_of(remove3)) # remove species that don't have ssb data
 
