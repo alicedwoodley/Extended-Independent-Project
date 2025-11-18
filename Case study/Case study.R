@@ -1,4 +1,6 @@
 library(dplyr)
+library(reshape2)  
+library(ggplot2) 
 
 ##### Finding case study #####
 
@@ -45,3 +47,23 @@ GoA.r <- select(GoA.r, -any_of(remove1)) # remove species that aren't in GoA
 GoA.r <- select(GoA.r, -any_of(remove2)) # remove species that don't interact 
 GoA.r <- select(GoA.r, -any_of(remove3)) # remove species that don't have ssb data
 
+GoA.ssb <- na.omit(GoA.ssb) # remove rows with missing values
+GoA.r <- na.omit(GoA.r)
+
+##### Overview of data #####
+
+# SSB data
+GoA.ssb <- data.frame(year = row.names(GoA.ssb), GoA.ssb) # add year as the first column
+row.names(GoA.ssb) <- NULL # remove row names
+
+ssb.long <- melt(GoA.ssb, id.vars = "year") # converts data to long form for use in plot
+colnames(ssb.long) <- c("year", "species", "ssb")
+ggplot(ssb.long, aes(x = year, y = ssb, col = species, group = species)) + geom_line()
+
+# Recruit data
+GoA.r <- data.frame(year = row.names(GoA.r), GoA.r)
+row.names(GoA.r) <- NULL
+
+r.long <- melt(GoA.r, id.vars = "year") # converts data to long form
+colnames(r.long) <- c("year", "species", "recruits")
+ggplot(r.long, aes(x = year, y = recruits, col = species, group = species)) + geom_line()
