@@ -1,6 +1,6 @@
 library(dplyr)
 library(reshape2)  
-library(ggplot2) 
+library(ggplot2)
 
 ##### Finding case study #####
 
@@ -58,7 +58,7 @@ row.names(GoA.ssb) <- NULL # remove row names
 
 ssb.long <- melt(GoA.ssb, id.vars = "year") # converts data to long form for use in plot
 colnames(ssb.long) <- c("year", "species", "ssb")
-ggplot(ssb.long, aes(x = year, y = ssb, col = species, group = species)) + geom_line()
+ggplot(ssb.long, aes(x = year, y = ssb, col = species, group = species)) + geom_line() + scale_y_log10()
 
 # Recruit data
 GoA.r <- data.frame(year = row.names(GoA.r), GoA.r)
@@ -66,10 +66,10 @@ row.names(GoA.r) <- NULL
 
 r.long <- melt(GoA.r, id.vars = "year") # converts data to long form
 colnames(r.long) <- c("year", "species", "recruits")
-ggplot(r.long, aes(x = year, y = recruits, col = species, group = species)) + geom_line()
+ggplot(r.long, aes(x = year, y = recruits, col = species, group = species)) + geom_line() + scale_y_log10()
 
 # Plotting SSB vs recruits
 GoA.long <- data.frame(ssb.long, r.long$recruits)
 colnames(GoA.long) <- c("year", "species", "ssb", "recruits")
-ggplot(GoA.long, aes(x = ssb, y = recruits, col = species, group = species)) + geom_line()
+ggplot(GoA.long, aes(x = ssb, y = recruits, col = species, group = species)) + geom_point() + scale_x_log10() + scale_y_log10()
 
