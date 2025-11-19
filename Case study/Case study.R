@@ -1,6 +1,9 @@
 library(dplyr)
 library(reshape2)  
 library(ggplot2)
+library(ggokabeito)
+
+load("~/GitHub/extended-independent-project/RAM Legacy R Data/DBdata[asmt][v4.66].RData")
 
 ##### Finding case study #####
 
@@ -50,26 +53,58 @@ GoA.r <- select(GoA.r, -any_of(remove3)) # remove species that don't have ssb da
 GoA.ssb <- na.omit(GoA.ssb) # remove rows with missing values
 GoA.r <- na.omit(GoA.r)
 
+colnames(GoA.ssb) <- GoA$commonname
+GoA.ssb <- data.frame(year = as.numeric(row.names(GoA.ssb)), GoA.ssb) # add year as the first column
+row.names(GoA.ssb) <- NULL # remove row names
+
+colnames(GoA.r) <- GoA$commonname
+GoA.r <- data.frame(year = as.numeric(row.names(GoA.r)), GoA.r)
+row.names(GoA.r) <- NULL
+
 ##### Overview of data #####
 
 # SSB data
-GoA.ssb <- data.frame(year = row.names(GoA.ssb), GoA.ssb) # add year as the first column
-row.names(GoA.ssb) <- NULL # remove row names
 
 ssb.long <- melt(GoA.ssb, id.vars = "year") # converts data to long form for use in plot
 colnames(ssb.long) <- c("year", "species", "ssb")
-ggplot(ssb.long, aes(x = year, y = ssb, col = species, group = species)) + geom_line() + scale_y_log10()
+ggplot(ssb.long, aes(x = year, y = ssb, col = species, group = species)) + 
+  geom_line() + 
+  scale_y_log10() + 
+  scale_color_okabe_ito(labels = GoA$commonname, name = "Species") + 
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 7)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Year") +
+  ylab("log(SSB)") +
+  ggtitle("Spawning stock of 6 species in the Gulf of Alaska 1978-2017")
 
 # Recruit data
-GoA.r <- data.frame(year = row.names(GoA.r), GoA.r)
-row.names(GoA.r) <- NULL
 
 r.long <- melt(GoA.r, id.vars = "year") # converts data to long form
 colnames(r.long) <- c("year", "species", "recruits")
-ggplot(r.long, aes(x = year, y = recruits, col = species, group = species)) + geom_line() + scale_y_log10()
+ggplot(r.long, aes(x = year, y = recruits, col = species, group = species)) + 
+  geom_line() + 
+  scale_y_log10() +  
+  scale_color_okabe_ito(labels = GoA$commonname, name = "Species") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 7)) +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("Year") +
+  ylab("log(R)") +
+  ggtitle("Recruitment of 6 species in the Gulf of Alaska 1978-2017")
 
 # Plotting SSB vs recruits
+
 GoA.long <- data.frame(ssb.long, r.long$recruits)
 colnames(GoA.long) <- c("year", "species", "ssb", "recruits")
-ggplot(GoA.long, aes(x = ssb, y = recruits, col = species, group = species)) + geom_point() + scale_x_log10() + scale_y_log10()
+ggplot(GoA.long, aes(x = ssb, y = recruits, col = species, shape = species, group = species)) + 
+  geom_point(size = 2.5) + 
+  scale_x_log10() + scale_y_log10() +  
+  scale_color_okabe_ito(labels = GoA$commonname, name = "Species") + 
+  scale_shape_manual(values = c(49:54), labels = GoA$commonname, name = "Species") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlab("log(SSB)") +
+  ylab("log(R)") +
+  ggtitle("Stock-recruitment of 6 species in the Gulf of Alaska 1978-2017")
 
