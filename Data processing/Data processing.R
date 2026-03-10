@@ -3,7 +3,7 @@
 library(dplyr)
 library(reshape2)
 
-load("~/GitHub/Extended-Independent-Project/RAM Legacy R Data/DBdata[asmt][v4.66].RData")
+load("~/GitHub/Extended-Independent-Project/RAM Legacy raw data/DBdata[asmt][v4.66].RData")
 
 # GoA
 
