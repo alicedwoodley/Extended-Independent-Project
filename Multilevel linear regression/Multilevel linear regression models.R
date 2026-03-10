@@ -32,7 +32,8 @@ ggplot(GoA.data, aes(x = log.ssb, y = log.recruits, col = species, shape = speci
   theme(plot.title = element_text(hjust = 0.5)) +
   xlab("log(SSB)") +
   ylab("log(R)") +
-  ggtitle("Multilevel linear regression for stock-recruitment of 6 species in the Gulf of Alaska 1980-2017")
+  ggtitle("Multilevel linear regression for stock-recruitment of 6 species in the Gulf of Alaska 1980-2017") +
+  theme(plot.title = element_text(size=10))
 
 # check responses are approx normally distributed
 qqnorm(GoA.data$log.recruits)
@@ -54,5 +55,4 @@ anova(model.lr, intercept.model)
 
 # likelihood ratio test - random intercept vs no random effects
 no.effects.model <- lm(log.recruits ~ log.ssb, data = GoA.data)
-
 anova(intercept.model, no.effects.model)
