@@ -1,4 +1,4 @@
-### Stock-recruitment of single species
+### Walleye pollock single species and multispecies Ricker models
 
 library(FSA)
 library(car) # Before dplyr to reduce conflicts with MASS 

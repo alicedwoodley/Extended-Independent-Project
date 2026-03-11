@@ -1,4 +1,4 @@
-### Arrowtooth flounder Ricker model
+### Arrowtooth flounder single species and multispecies Ricker models
 
 library(FSA)
 library(car) # Before dplyr to reduce conflicts with MASS 
