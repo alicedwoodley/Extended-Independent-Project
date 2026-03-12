@@ -1,5 +1,6 @@
-### Walleye pollock single species and multispecies Ricker models
+##### Walleye pollock single species and multispecies Ricker models #####
 
+### Packages:
 library(FSA)
 library(car) # Before dplyr to reduce conflicts with MASS 
 library(dplyr)
@@ -7,96 +8,168 @@ library(magrittr)
 library(plotrix)
 library(nlstools)
 library(lsmeans)
+library(scales)
 
+### Load in data
 load("~/GitHub/Extended-Independent-Project/Gulf_Of_Alaska.RData")
 
-wpollock <- GoA.data[GoA.data$species == "Walleye pollock",] # extracts walleye pollock data
-wpollock <- wpollock[,-2] # removes species name column
+### Extract Ricker function
+ricker <- srFuns("Ricker")
 
-start <- srStarts(recruits~ssb, data = wpollock, type = "Ricker") # calculate starting values for parameters
-start # warning: b not positive, likely poor starting value
+### Set seed for bootstrapping
+set.seed(123)
 
-ricker <- srFuns("Ricker") # extract ricker function from package
+# Extract walleye pollock data
+wpollock <- GoA.data[GoA.data$species == "Walleye pollock",]
+wpollock <- wpollock[,-2] # removes species name
 
-wpmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock, start = start) # fit ricker model using log-log
+# Calculate starting values for parameter estimation
+WPstart <- srStarts(recruits~ssb, data = wpollock, type = "Ricker")
+WPstart # "Warning - b negative likely poor starting value" - nls still does not improve on it!
 
-cbind(estimates = coef(wpmodel), confint(wpmodel)) # shows parameter estimates and confidence intervals
+# Fit the model using nls
+WPmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock, start = WPstart)
 
-bootR <- nlsBoot(wpmodel) # calculates confidence intervals with bootstrap method - lots of warnings
-cbind(estimates = coef(wpmodel), confint(bootR))
+# Calculate 95% confidence intervals for parameter estimates using the bootstrap method
+WPbootR <- nlsBoot(WPmodel) # 50 or more warnings!
+cbind(estimates = coef(WPmodel), confint(WPbootR))
 
-ind <- srFuns("independence") # extracts function for model with no density dependence (b = 0)
-indstart <- srStarts(recruits~ssb, data = wpollock, type = "independence") # extract starting values 
-indmodel <- nls(log.recruits ~ log(ind(ssb,a)), data = wpollock, start = indstart) # fit model with no density dependence
-
-# could you do weighted nls so that one annoying point doesn't have as much of an effect?
-
-lrt(indmodel, com = wpmodel) # likelihood ratio test
-# results suggest simpler model is still an adequate fit of the data - high p value
-
-x <- seq(min(wpollock$ssb), max(wpollock$ssb), length.out = 199) # produce values of S for prediction
-predR <- ricker(x, a = coef(wpmodel)) # predicted mean R
-LCI <- UCI <- numeric(length(x)) # create empty vectors length x
-for(i in 1:length(x)) {
-  tmp <- apply(bootR$coefboot, MARGIN = 1, FUN = ricker, S = x[i])
-  LCI[i] <- quantile(tmp, 0.025)
-  UCI[i] <- quantile(tmp, 0.975)
+# Produce values of S to predict new values of R
+WPx <- seq(min(wpollock$ssb), max(wpollock$ssb), length.out = 199)
+WPpredR <- ricker(WPx, a = coef(WPmodel))
+WPLCI <- WPUCI <- numeric(length(WPx))
+for(i in 1:length(WPx)) { # stores a 95% confidence interval for each predicted value of R
+  tmp <- apply(WPbootR$coefboot, MARGIN = 1, FUN = ricker, S = WPx[i])
+  WPLCI[i] <- quantile(tmp, 0.025)
+  WPUCI[i] <- quantile(tmp, 0.975)
 }
-ylmts <- range(c(predR, LCI, UCI, wpollock$recruits))
-xlmts <- range(c(x, wpollock$ssb))
 
-plot(recruits~ssb, data = wpollock, xlim = xlmts, ylim = ylmts, col = "white", ylab = "Recruits", xlab = "SSB")
-polygon(c(x, rev(x)), c(LCI,rev(UCI)), col = "gray80", border = NA)
-points(recruits~ssb, data = wpollock, pch = 19, col = rgb(0,0,0,1/2))
-lines(predR~x, lwd = 2)
+# Create axis limits for plot
+WPylmts <- range(c(WPpredR, WPLCI, WPUCI, wpollock$recruits))
+WPxlmts <- range(c(WPx, wpollock$ssb))
 
-# incorporating pacific ocean perch stock as an explanatory variable
 
-poperch <- GoA.data[GoA.data$species == "Pacific ocean perch",] # find pop data
-poperch <- poperch[,-2] 
+##### What happens to single species model if the crazy 2012 point is excluded? #####
 
-wpollock <- cbind(wpollock, poperch$ssb) # adds stock size of pop to the wpollock dataframe
-colnames(wpollock)[6] <- "popssb"
+wpollock_test <- wpollock[-which(wpollock$year=="2013"),]
 
-newricker <- function(S, X, a, b = NULL, c = NULL){ # S = wp stock, X = pop stock
+# Calculate starting values for parameter estimation
+WPstart_test <- srStarts(recruits~ssb, data = wpollock_test, type = "Ricker")
+WPstart_test # "Warning - b negative likely poor starting value" - nls still does not improve on it!
+
+# Fit the model using nls
+WPmodel_test <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock_test, start = WPstart_test)
+
+# Calculate 95% confidence intervals for parameter estimates using the bootstrap method
+WPbootR_test <- nlsBoot(WPmodel_test) # 50 or more warnings!
+cbind(estimates = coef(WPmodel_test), confint(WPbootR_test))
+
+# Produce values of S to predict new values of R
+WPx_test <- seq(min(wpollock_test$ssb), max(wpollock_test$ssb), length.out = 199)
+WPpredR_test <- ricker(WPx_test, a = coef(WPmodel_test))
+WPLCI_test <- WPUCI_test <- numeric(length(WPx_test))
+for(i in 1:length(WPx_test)) { # stores a 95% confidence interval for each predicted value of R
+  tmp <- apply(WPbootR_test$coefboot, MARGIN = 1, FUN = ricker, S = WPx_test[i])
+  WPLCI_test[i] <- quantile(tmp, 0.025)
+  WPUCI_test[i] <- quantile(tmp, 0.975)
+}
+
+# Create axis limits for plot
+WPylmts_test <- range(c(WPpredR_test, WPLCI_test, WPUCI_test, wpollock_test$recruits))
+WPxlmts_test <- range(c(WPx_test, wpollock_test$ssb))
+
+# Plot:
+
+par(mfrow = c(1,1))
+plot(recruits~ssb, data = wpollock_test, 
+     xlim = WPxlmts_test, ylim = WPylmts_test, 
+     col = "white", 
+     ylab = "Recruits (in millions)", xlab = "SSB in (thousand) tonnes", cex.lab = 1.4,
+     main = "Walleye pollock (with unusual year removed)", cex.main = 1.75,
+     yaxt = "n", xaxt = "n")
+
+# Add axis in thousands and millions
+axis(1, at = pretty(wpollock_test$ssb), labels = label_number(scale = 1e-3)(pretty(wpollock_test$ssb)))
+axis(2, at = pretty(wpollock_test$recruits), labels = label_number(scale = 1e-6)(pretty(wpollock_test$recruits)))
+
+# Add 95% confidence interval for predictions onto plot
+polygon(c(WPx_test, rev(WPx_test)), c(WPLCI_test,rev(WPUCI_test)), col = palette.colors(7)[7], border = NA)
+
+# Add existing data points and Ricker curve
+points(recruits~ssb, data = wpollock_test, pch = 19, col = rgb(0,0,0,1/2))
+lines(WPpredR_test~WPx_test, lwd = 2)
+
+##### Multispecies model #####
+
+# Add other species to wpollock
+wpollock$afssb <- GoA.data[GoA.data$species == "Arrowtooth flounder", 3]
+wpollock$fsssb <- GoA.data[GoA.data$species == "Flathead sole", 3]
+wpollock$pcssb <- GoA.data[GoA.data$species == "Pacific cod", 3]
+wpollock$popssb <- GoA.data[GoA.data$species == "Pacific ocean perch", 3]
+wpollock$rsssb <- GoA.data[GoA.data$species == "Rock sole", 3]
+
+WPricker1 <- function(S, X1, X2, X3, X4, X5, a, b = NULL, c = NULL, d = NULL, f = NULL, g = NULL, h  = NULL){ # S = wp stock, X1 = af, X2 = fs, X3 = pc, X4 = pop, X5 = rs
   if(length(a)>1){
+    h <- a[7]
+    g <- a[6]
+    f <- a[5]
+    d <- a[4]
     c <- a[3]
     b <- a[2]
     a <- a[1]
   }
-  a*S*exp(-b*S+c*X) # creates new ricker function
+  a*S*exp(-b*S+c*X1+d*X2+f*X3+g*X4+h*X5)
 }
 
-# find starting values through linearising and using lm()
-linear <- lm(log(recruits/ssb)~ ssb + popssb, data = wpollock)
-start2 <- coef(linear) # extract coefficients
-start2 <- list(a = exp(start2[[1]]), b = start2[[2]], c = start2[[3]]) # prep to put in model
+# Find starting values through linearising and using lm()
+linear <- lm(log(recruits/ssb)~ ssb + afssb + fsssb + pcssb + popssb + rsssb, data = wpollock)
+WPstart2 <- coef(linear) # extract coefficients
+WPstart2 <- list(a = exp(WPstart2[[1]]), b = WPstart2[[2]], c = WPstart2[[3]], d = WPstart2[[4]], f = WPstart2[[5]], g = WPstart2[[6]], h = WPstart2[[7]]) # prep to put in model
 
-modelwpop <- nls(log.recruits~log(newricker(ssb, popssb, a, b, c)), data = wpollock, start = start2)
+# Fit model using nls
+WPmultimodel <- nls(log.recruits~log(WPricker1(ssb, afssb, fsssb, pcssb, popssb, rsssb, a,b,c,d,f,g,h)), data = wpollock, start = WPstart2) 
+summary(WPmultimodel) # COEFFICIENTS OF PREY SPECIES ARE NEGATIVE THIS IS SO GOOD
 
-bootR2 <- nlsBoot(modelwpop) # calculates confidence intervals with bootstrap method - lots of warnings
-cbind(estimates = coef(modelwpop), confint(bootR2))
+# Calculate 95% confidence intervals for parameter estimates using the bootstrap method
+WPbootR2 <- nlsBoot(WPmultimodel) # 50 or more warnings again - 623 successful convergences
+cbind(estimates = coef(WPmultimodel), confint(WPbootR2))
 
-# prediction with existing pop ssb
-
-x2 <- seq(min(wpollock$ssb), max(wpollock$ssb), length.out = 38) # produce values of S for prediction
-predRnew <- newricker(x2, wpollock$popssb, a = coef(modelwpop)[[1]], b = coef(modelwpop)[[2]], c = coef(modelwpop)[[3]] ) # predicted mean R
-LCI <- UCI <- numeric(length(x2)) # create empty vectors length x
-for(i in 1:length(x2)) {
-  tmp <- apply(bootR2$coefboot, MARGIN = 1, FUN = newricker, S = x2[i], a = coef(modelwpop)[[1]], b = coef(modelwpop)[[2]], c = coef(modelwpop)[[3]])
-  LCI[i] <- quantile(tmp, 0.025)
-  UCI[i] <- quantile(tmp, 0.975)
+# Produce values of S to predict new values of R
+WPx2 <- seq(min(wpollock$ssb), max(wpollock$ssb), length.out = 38)
+WPpredR2 <- WPricker1(WPx2, wpollock$afssb, wpollock$fsssb, wpollock$pcssb, wpollock$popssb, wpollock$rsssb, a = coef(WPmultimodel))
+WPLCI2 <- WPUCI2 <- numeric(length(WPx2))
+for(i in 1:length(WPx2)) { # stores a 95% confidence interval for each predicted value of R
+  tmp <- apply(WPbootR2$coefboot, MARGIN = 1, function(a_tmp) 
+    WPricker1(S = WPx2[i], X1 = wpollock$afssb[i], X2 = wpollock$fsssb[i], X3 = wpollock$pcssb[i], X4 = wpollock$popssb[i], X5 = wpollock$rsssb[i], a = a_tmp)
+  )
+  WPLCI2[i] <- quantile(tmp, 0.025)
+  WPUCI2[i] <- quantile(tmp, 0.975)
 }
-ylmts <- range(c(predRnew, LCI, UCI, wpollock$recruits))
-xlmts <- range(c(x2, wpollock$ssb))
 
-plot(recruits~ssb, data = wpollock, xlim = xlmts, ylim = ylmts, col = "white", main = "Ricker model of Walleye Pollock stock-recruitment including Pacific Ocean Perch SSB", cex.main = 0.8, ylab = "Recruits", xlab = "SSB")
-polygon(c(x2, rev(x2)), c(LCI,rev(UCI)), col = "gray80", border = NA)
+# Create axis limits for plot
+WPylmts2 <- range(c(WPpredR2, WPLCI2, WPUCI2, wpollock$recruits))
+WPxlmts2 <- range(c(WPx2, wpollock$ssb))
+
+### Plot:
+
+plot(recruits~ssb, data = wpollock, 
+     xlim = WPxlmts2, ylim = WPylmts2, 
+     col = "white", 
+     ylab = "Recruits (in millions)", xlab = "SSB in (thousand) tonnes",
+     main = "Walleye pollock multispecies Ricker model",
+     yaxt = "n", xaxt = "n")
+
+# Add axis in thousands and millions
+axis(1, at = pretty(wpollock$ssb), labels = label_number(scale = 1e-3)(pretty(wpollock$ssb)))
+axis(2, at = pretty(wpollock$recruits), labels = label_number(scale = 1e-6)(pretty(wpollock$recruits)))
+
+# Add 95% confidence intervals for predictions onto plot
+polygon(c(WPx2, rev(WPx2)), c(WPLCI2,rev(WPUCI2)), col = palette.colors(7)[7], border = NA)
+
+# Add existing data points and Ricker curve
 points(recruits~ssb, data = wpollock, pch = 19, col = rgb(0,0,0,1/2))
-lines(predRnew~x2, lwd = 2)
+lines(WPpredR2~WPx2, lwd = 2)
 
-plot(ssb~year, data = poperch)
+##### Comparison with single species model #####
 
-
-
-# 
+cbind("Single species" = AIC(WPmodel), "Multispecies" = AIC(WPmultimodel))
