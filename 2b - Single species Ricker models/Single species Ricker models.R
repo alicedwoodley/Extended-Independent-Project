@@ -15,9 +15,6 @@ load("~/GitHub/Extended-Independent-Project/Gulf_Of_Alaska.RData")
 
 ### Extract Ricker function
 ricker <- srFuns("Ricker")
-logricker <- function(S, a, b){ # create log of Ricker function so nls runs easier
-  log(ricker(S, a, b))
-}
 
 ### Set seed for bootstrapping
 set.seed(123)
@@ -35,7 +32,7 @@ AFstart <- srStarts(recruits~ssb, data = aflounder, type = "Ricker")
 AFstart_bad <- list(a = 1000, b = 0.00065)
 
 # Fit the model using nls
-AFmodel <- nls(log.recruits~logricker(ssb,a,b), data = aflounder, start = AFstart_bad)
+AFmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = aflounder, start = AFstart_bad)
 summary(AFmodel) # Note: nls has performed 5 iterations from the "bad" starting values
 
 # Show how the calculated starting values produce the almost ideal parameters before nls!
