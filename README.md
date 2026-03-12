@@ -24,8 +24,11 @@ The data of the chosen species from the Gulf of Alaska is processed here, in pre
 ### 2a - Multilevel linear regression
 Here a multilevel linear regression model was used to incorporate all 6 species in a single model. All 6 regression lines had very similar gradient- it is unclear as to why that is. This model could be improved to incorporate a covariate that represents how much each species is preyed on / how much of their food source is available. (Note - this model may not feature in the final report and if so, may be removed from this repository.)
 
-### 2b and 2c - Walleye pollock and arrowtooth flounder Ricker models
-Here I experiment with adapting a Ricker model to incorporate additional explanatory variables, namely the spawning stock biomass of species that interact with walleye pollock and arrowtooth flounder.
+### 2b - Single species Ricker models
+Traditional Ricker models are fit here to investigate how prominent a stock-recruitment relationship is in each species.
+
+### 2c - Multispecies Ricker models
+Here I experiment with adapting a Ricker model to incorporate additional explanatory variables, namely the spawning stock biomass of species that interact with walleye pollock and arrowtooth flounder, and compare these new models to the single species alternatives.
 
 ### Report and presentation
 Report deadline 27/04/2026 and presentation day 08/05/2026. Both the completed report and presentation slides will be uploaded here once complete.
