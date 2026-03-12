@@ -23,6 +23,8 @@ set.seed(123)
 wpollock <- GoA.data[GoA.data$species == "Walleye pollock",]
 wpollock <- wpollock[,-2] # removes species name
 
+##### Single species model #####
+
 # Calculate starting values for parameter estimation
 WPstart <- srStarts(recruits~ssb, data = wpollock, type = "Ricker")
 WPstart # "Warning - b negative likely poor starting value" - nls still does not improve on it!
@@ -47,7 +49,6 @@ for(i in 1:length(WPx)) { # stores a 95% confidence interval for each predicted 
 # Create axis limits for plot
 WPylmts <- range(c(WPpredR, WPLCI, WPUCI, wpollock$recruits))
 WPxlmts <- range(c(WPx, wpollock$ssb))
-
 
 ##### What happens to single species model if the crazy 2012 point is excluded? #####
 
@@ -99,6 +100,7 @@ polygon(c(WPx_test, rev(WPx_test)), c(WPLCI_test,rev(WPUCI_test)), col = palette
 points(recruits~ssb, data = wpollock_test, pch = 19, col = rgb(0,0,0,1/2))
 lines(WPpredR_test~WPx_test, lwd = 2)
 
+
 ##### Multispecies model #####
 
 # Add other species to wpollock
@@ -131,7 +133,7 @@ WPmultimodel <- nls(log.recruits~log(WPricker1(ssb, afssb, fsssb, pcssb, popssb,
 summary(WPmultimodel) # COEFFICIENTS OF PREY SPECIES ARE NEGATIVE THIS IS SO GOOD
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
-WPbootR2 <- nlsBoot(WPmultimodel) # 50 or more warnings again - 623 successful convergences
+WPbootR2 <- nlsBoot(WPmultimodel) # 50 or more warnings again - expected when initial parameter estimates are negative
 cbind(estimates = coef(WPmultimodel), confint(WPbootR2))
 
 # Produce values of S to predict new values of R
