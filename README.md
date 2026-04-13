@@ -28,10 +28,10 @@ Here a multilevel linear regression model was used to incorporate all 6 species 
 Traditional Ricker models are fit here to investigate how prominent a stock-recruitment relationship is in each species.
 
 ### 2c - Multispecies Ricker models
-Here I experiment with adapting a Ricker model to incorporate additional explanatory variables, namely the spawning stock biomass of species that interact with walleye pollock and arrowtooth flounder, and compare these new models to the single species alternatives.
+Here I experiment with adapting a Ricker model to incorporate SSB of interacting species as additional explanatory variables and compare these new models to the single species alternatives. (Note: not all of these models are included in the final report.)
 
 ### Report and presentation
-Report deadline 27/04/2026 and presentation day 08/05/2026. Both the completed report and presentation slides will be uploaded here once complete.
+The final report will be complete by 27/04/2026 and this work will be presented on 08/05/2026. Both the completed report and presentation slides will be uploaded here once complete.
 
 <p align="center">
 𓆝 𓆟 𓆞 𓆟 𓆝
