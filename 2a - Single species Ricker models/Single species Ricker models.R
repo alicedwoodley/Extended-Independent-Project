@@ -19,6 +19,29 @@ ricker <- srFuns("Ricker")
 ### Set seed for bootstrapping
 set.seed(123)
 
+### Basic plots of a Beverton-Holt and Ricker curve for report section 2
+
+# Extract Beverton-Holt function
+bh <- srFuns("BevertonHolt", msg = T)
+example <- seq(from = 0, to = 1000, by = 0.5) # Generate example SSB
+
+par(mfrow = c(1,2))
+plot(bh(example, a = 0.5, b = 0.005)~example,
+     type = "l",
+     lwd = 2,
+     main = "(a) Beverton-Holt",
+     col = "red",
+     xlab = "Stock size",
+     ylab = "Recruitment")
+
+plot(ricker(example, a = 0.5, b = 0.005)~example,
+     type = "l",
+     lwd = 2,
+     main = "(b) Ricker",
+     col = "blue",
+     xlab = "Stock size",
+     ylab = "Recruitment")
+
 ### Arrowtooth flounder
 
 # Extract arrowtooth flounder data
@@ -165,6 +188,7 @@ RSmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = rsole, start = RSstart)
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
 RSbootR <- nlsBoot(RSmodel) # 18 warnings!
+nrow(RSbootR$coefboot)
 cbind(estimates = coef(RSmodel), confint(RSbootR)) 
 
 # Produce values of S to predict new values of R
@@ -196,6 +220,7 @@ WPmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock, start = WPsta
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
 WPbootR <- nlsBoot(WPmodel) # 50 or more warnings!
+nrow(WPbootR$coefboot) # Number of successful iterations
 cbind(estimates = coef(WPmodel), confint(WPbootR))
 
 # Produce values of S to predict new values of R
@@ -215,7 +240,7 @@ WPxlmts <- range(c(WPx, wpollock$ssb))
 ##### Combined plot #####
 
 # Divide plot into 6
-par(mfrow = c(2,3), mar = c(5.1, 4.5, 4.1, 2)) 
+par(mfrow = c(3,2), mar = c(5.1, 4.5, 4.1, 2)) 
 
 ### Arrowtooth flounder
 
@@ -262,7 +287,7 @@ lines(FSpredR~FSx, lwd = 2)
 plot(recruits~ssb, data = pcod, 
      xlim = PCxlmts, ylim = PCylmts, 
      col = "white", 
-     ylab = "Recruits (in millions)", xlab = "SSB in (thousand)tonnes", cex.lab = 1.4,
+     ylab = "Recruits (in millions)", xlab = "SSB in (thousand) tonnes", cex.lab = 1.4,
      main = "Pacific cod", cex.main = 1.75,
      yaxt = "n", xaxt = "n")
 

@@ -32,24 +32,6 @@ WPstart # "Warning - b negative likely poor starting value" - nls still does not
 # Fit the model using nls
 WPmodel <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock, start = WPstart)
 
-# Calculate 95% confidence intervals for parameter estimates using the bootstrap method
-WPbootR <- nlsBoot(WPmodel) # 50 or more warnings!
-cbind(estimates = coef(WPmodel), confint(WPbootR))
-
-# Produce values of S to predict new values of R
-WPx <- seq(min(wpollock$ssb), max(wpollock$ssb), length.out = 199)
-WPpredR <- ricker(WPx, a = coef(WPmodel))
-WPLCI <- WPUCI <- numeric(length(WPx))
-for(i in 1:length(WPx)) { # stores a 95% confidence interval for each predicted value of R
-  tmp <- apply(WPbootR$coefboot, MARGIN = 1, FUN = ricker, S = WPx[i])
-  WPLCI[i] <- quantile(tmp, 0.025)
-  WPUCI[i] <- quantile(tmp, 0.975)
-}
-
-# Create axis limits for plot
-WPylmts <- range(c(WPpredR, WPLCI, WPUCI, wpollock$recruits))
-WPxlmts <- range(c(WPx, wpollock$ssb))
-
 ##### What happens to single species model if the crazy 2012 point is excluded? #####
 
 wpollock_test <- wpollock[-which(wpollock$year=="2013"),]
@@ -130,10 +112,11 @@ WPstart2 <- list(a = exp(WPstart2[[1]]), b = WPstart2[[2]], c = WPstart2[[3]], d
 
 # Fit model using nls
 WPmultimodel <- nls(log.recruits~log(WPricker1(ssb, afssb, fsssb, pcssb, popssb, rsssb, a,b,c,d,f,g,h)), data = wpollock, start = WPstart2) 
-summary(WPmultimodel) # COEFFICIENTS OF PREY SPECIES ARE NEGATIVE THIS IS SO GOOD
+summary(WPmultimodel)
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
 WPbootR2 <- nlsBoot(WPmultimodel) # 50 or more warnings again - expected when initial parameter estimates are negative
+nrow(WPbootR2$coefboot) # 623 successful iterations
 cbind(estimates = coef(WPmultimodel), confint(WPbootR2))
 
 # Produce values of S to predict new values of R
@@ -163,7 +146,7 @@ plot(recruits~ssb, data = wpollock,
 
 # Add axis in thousands and millions
 axis(1, at = pretty(wpollock$ssb), labels = label_number(scale = 1e-3)(pretty(wpollock$ssb)))
-axis(2, at = pretty(wpollock$recruits), labels = label_number(scale = 1e-6)(pretty(wpollock$recruits)))
+axis(2, at = pretty(WPUCI2), labels = label_number(scale = 1e-6)(pretty(WPUCI2)))
 
 # Add 95% confidence intervals for predictions onto plot
 polygon(c(WPx2, rev(WPx2)), c(WPLCI2,rev(WPUCI2)), col = palette.colors(7)[7], border = NA)
@@ -175,3 +158,13 @@ lines(WPpredR2~WPx2, lwd = 2)
 ##### Comparison with single species model #####
 
 cbind("Single species" = AIC(WPmodel), "Multispecies" = AIC(WPmultimodel))
+
+# Verify residuals are normal so assumptions in AIC hold
+
+par(mfrow = c(1,2))
+
+qqnorm(resid(WPmodel), main = "Q-Q plot for walleye pollock Ricker model", cex.main = 0.9)
+qqline(resid(WPmodel), col = palette.colors(7)[7], lwd = 1.5)
+
+qqnorm(resid(WPmultimodel), main = "Q-Q plot for walleye pollock multispecies model", cex.main = 0.9)
+qqline(resid(WPmultimodel), col = palette.colors(7)[7], lwd = 1.5)

@@ -1,11 +1,13 @@
-### Data processing
+##### Data processing #####
 
+### Packages:
 library(dplyr)
 library(reshape2)
 
-load("~/GitHub/Extended-Independent-Project/RAM Legacy raw data/DBdata[asmt][v4.66].RData")
+### Load in raw data
+load("~/GitHub/Extended-Independent-Project/0 - RAM Legacy raw data/DBdata[asmt][v4.66].RData")
 
-# GoA
+### Extracting Gulf of Alaska data 
 
 stock.areas <- as.data.frame(cbind(stock$stockid, stock$scientificname, stock$commonname, stock$areaid, stock$region))
 colnames(stock.areas) <- c('stockid', 'scientificname', 'commonname', 'areaid', 'region')
@@ -15,10 +17,16 @@ colnames(areas) <- c('areaid', 'areaname')
 stock.areas$areaname <- areas$areaname[match(stock.areas$areaid, areas$areaid)]
 
 GoA.species <- stock.areas[stock.areas$areaname == 'Gulf of Alaska',]
+
+# Check which have data available
+ssb.test <- select(ssb.data, any_of(GoA.species$stockid))
+r.test <- select(r.data, any_of(GoA.species$stockid))
+
+# Reducing to interacting species
 species <- c("ARFLOUNDGA", "FLSOLEGA", "PCODGA", "POPERCHGA", "RSOLEGA", "WPOLLGA")
 GoA.species <- GoA.species[GoA.species$stockid %in% species, 1:3]
 
-# GoA.data
+### GoA.data
 
 GoA.ssb <- select(ssb.data, any_of(species))
 GoA.r <- select(r.data, any_of(species))

@@ -57,7 +57,7 @@ POPmultimodel <- nls(log.recruits~log(POPricker(ssb, wpssb, a,b,c)), data = pope
 summary(POPmultimodel)
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
-POPbootR2 <- nlsBoot(POPmultimodel) # Warning - fit did not converge 10 times during bootstrapping
+POPbootR2 <- nlsBoot(POPmultimodel) # Warning - fit did not converge 7 times during bootstrapping
 cbind(estimates = coef(POPmultimodel), confint(POPbootR2))
 
 # Produce values of S to predict new values of R
@@ -77,6 +77,8 @@ POPylmts2 <- range(c(POPpredR2, POPLCI2, POPUCI2, poperch$recruits))
 POPxlmts2 <- range(c(POPx2, poperch$ssb))
 
 ### Plot:
+
+par(mar = c(5.1, 5, 4.1, 2.1))
 
 plot(recruits~ssb, data = poperch, 
      xlim = POPxlmts2, ylim = POPylmts2, 
@@ -99,3 +101,13 @@ lines(POPpredR2~POPx2, lwd = 2)
 ##### Comparison with single species model #####
 
 cbind("Single species" = AIC(POPmodel), "Multispecies" = AIC(POPmultimodel))
+
+# Verify residuals are normal so assumptions in AIC hold
+
+par(mfrow = c(1,2))
+
+qqnorm(resid(POPmodel), main = "Q-Q plot for Pacific ocean perch Ricker model", cex.main = 0.9)
+qqline(resid(POPmodel), col = palette.colors(7)[5], lwd = 1.5)
+
+qqnorm(resid(POPmultimodel), main = "Q-Q plot for Pacific ocean perch multispecies model", cex.main = 0.9)
+qqline(resid(POPmultimodel), col = palette.colors(7)[5], lwd = 1.5)

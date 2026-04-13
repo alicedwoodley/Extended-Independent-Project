@@ -63,7 +63,8 @@ PCmultimodel <- nls(log.recruits~log(PCricker(ssb, afssb, fsssb, rsssb, wpssb, a
 summary(PCmultimodel)
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
-PCbootR2 <- nlsBoot(PCmultimodel) # 50 or more warnings - converged 934 times 
+PCbootR2 <- nlsBoot(PCmultimodel) # 50 or more warnings
+nrow(PCbootR2$coefboot) # 934 successful iterations
 cbind(estimates = coef(PCmultimodel), confint(PCbootR2))
 
 # Produce values of S to predict new values of R
@@ -93,7 +94,7 @@ plot(recruits~ssb, data = pcod,
 
 # Add axis in thousands and millions
 axis(1, at = pretty(pcod$ssb), labels = label_number(scale = 1e-3)(pretty(pcod$ssb)))
-axis(2, at = pretty(pcod$recruits), labels = label_number(scale = 1e-6)(pretty(pcod$recruits)))
+axis(2, at = pretty(PCUCI2), labels = label_number(scale = 1e-6)(pretty(PCUCI2)))
 
 # Add 95% confidence intervals for predictions onto plot
 polygon(c(PCx2, rev(PCx2)), c(PCLCI2,rev(PCUCI2)), col = palette.colors(7)[4], border = NA)
@@ -105,3 +106,13 @@ lines(PCpredR2~PCx2, lwd = 2)
 ##### Comparison with single species model #####
 
 cbind("Single species" = AIC(PCmodel), "Multispecies" = AIC(PCmultimodel))
+
+# Verify residuals are normal so assumptions in AIC hold
+
+par(mfrow = c(1,2))
+
+qqnorm(resid(PCmodel), main = "Q-Q plot for Pacific cod Ricker model", cex.main = 0.9)
+qqline(resid(PCmodel), col = palette.colors(7)[4], lwd = 1.5)
+
+qqnorm(resid(PCmultimodel), main = "Q-Q plot for Pacific cod multispecies model", cex.main = 0.9)
+qqline(resid(PCmultimodel), col = palette.colors(7)[4], lwd = 1.5)
