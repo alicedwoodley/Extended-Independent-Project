@@ -67,8 +67,8 @@ par(mfrow = c(1,1))
 plot(recruits~ssb, data = wpollock_test, 
      xlim = WPxlmts_test, ylim = WPylmts_test, 
      col = "white", 
-     ylab = "Recruits (in millions)", xlab = "SSB in (thousand) tonnes", cex.lab = 1.4,
-     main = "Walleye pollock (with unusual year removed)", cex.main = 1.75,
+     ylab = "Recruits (in millions)", xlab = "SSB in (thousand) tonnes",
+     main = "Walleye pollock (with unusual year removed)",
      yaxt = "n", xaxt = "n")
 
 # Add axis in thousands and millions
