@@ -5,7 +5,7 @@
 # MMath Extended Independent Project (in progress)
 
 ### Overview
-In this project, I propose multispecies stock-recruitment models that directly incorporate the effects of interspecies predator-prey interactions. I am producing a written report and will additionally give a talk on the results of my work.
+In this project, I propose multispecies stock-recruitment models that directly incorporate the effects of predator-prey interactions. I am producing a written report and will additionally give a talk on the results of my work.
 
 ### Data
 This project uses data from the RAM Legacy stock assessment database (<https://www.ramlegacy.org/>). The folder 'RAM Legacy raw data' contains both the Rdata file and script file describing the contents of the database. 
