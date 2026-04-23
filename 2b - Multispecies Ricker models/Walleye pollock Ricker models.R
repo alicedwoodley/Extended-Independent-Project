@@ -45,6 +45,7 @@ WPmodel_test <- nls(log.recruits~log(ricker(ssb,a,b)), data = wpollock_test, sta
 
 # Calculate 95% confidence intervals for parameter estimates using the bootstrap method
 WPbootR_test <- nlsBoot(WPmodel_test) # 50 or more warnings!
+nrow(WPbootR_test$coefboot) # 912 successful iterations
 cbind(estimates = coef(WPmodel_test), confint(WPbootR_test))
 
 # Produce values of S to predict new values of R
