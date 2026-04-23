@@ -2,7 +2,7 @@
 𓆝 𓆟 𓆞 𓆟 𓆝
 </p>
 
-# MMath Extended Independent Project (in progress)
+# MMath Extended Independent Project
 
 ### Overview
 In this project, I propose multispecies stock-recruitment models that directly incorporate the effects of predator-prey interactions. I am producing a written report and will additionally give a talk on the results of my work.
