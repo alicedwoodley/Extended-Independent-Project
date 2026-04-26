@@ -5,7 +5,7 @@
 # MMath Extended Independent Project
 
 ### Overview
-In this project, I propose multispecies stock-recruitment models that directly incorporate the effects of predator-prey interactions. I am producing a written report and will additionally give a talk on the results of my work.
+In this project, I propose multispecies stock-recruitment models that directly incorporate the effects of predator-prey interactions. I have produced a written report and will additionally give a talk on the results of my work.
 
 ### Data
 This project uses data from the RAM Legacy stock assessment database (<https://www.ramlegacy.org/>). The folder 'RAM Legacy raw data' contains both the Rdata file and script file describing the contents of the database. 
@@ -27,14 +27,14 @@ Traditional Ricker models are fit here to investigate how prominent a stock-recr
 
 ### 2b - Multispecies Ricker models
 Here I experiment with adapting a Ricker model to incorporate SSB of interacting species as additional explanatory variables and compare these new models to the single species alternatives. \
-(Note: not all of these models are included in the final report.)
+(Note: the arrowtooth flounder model is not included in the final report.)
 
 ### Additional - Multilevel linear regression
 Here a multilevel linear regression model was used to incorporate all 6 species in a single model. All 6 regression lines had very similar gradient- it is unclear as to why that is. This model could be improved to incorporate a covariate that represents how much each species is preyed on / how much of their food source is available. \
 (Note: this model was one of my first experimental ideas and does not feature in the final report.)
 
 ### Report and presentation
-The final report will be complete by 27/04/2026 and this work will be presented on 08/05/2026. Both the completed report and presentation slides will be uploaded here once complete.
+A short presentation of this work will be given on 08/05/2026. The presentation slides will be uploaded here once complete.
 
 <p align="center">
 𓆝 𓆟 𓆞 𓆟 𓆝
